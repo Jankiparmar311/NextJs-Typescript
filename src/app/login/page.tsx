@@ -53,9 +53,12 @@ const Login = () => {
           password: encryptString(values?.password?.trim()),
         })
       ).then((res) => {
-        if (res) {
+        console.log("res", res);
+        if (res?.meta?.requestStatus === "fulfilled") {
           setLoading(false);
           setIsVerifyOtp(true);
+        } else {
+          setLoading(false);
         }
       });
     } catch (error) {

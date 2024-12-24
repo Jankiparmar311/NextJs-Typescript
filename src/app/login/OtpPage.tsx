@@ -8,6 +8,9 @@ import { useDispatch } from "react-redux";
 import { verifyOtp } from "./slice/loginSlice";
 import Cookies, { cookieKeys } from "../../services/cookies";
 import { useRouter } from "next/navigation";
+import { axiosNisystAdmin } from "@/services/api";
+import { RESEND_AUTH } from "@/services/url";
+import { toast } from "react-toastify";
 
 interface InitialValues {
   otp: string;
@@ -30,26 +33,33 @@ const OtpPage = () => {
       .required("OTP is required"),
   });
 
-  console.log("User", typeof User);
+  console.log("User", User);
 
-  const onSubmit = (values: InitialValues) => {
+  const onSubmit = async (values: InitialValues) => {
     try {
       setLoading(true);
-      dispatch(
+      const res = await dispatch(
         verifyOtp({
           authenticationCode: values?.otp,
           userId: User,
         })
-      ).then((res) => {
-        console.log("res", res);
+      );
+      if (res) {
         router.push("/dashboard");
-      });
-      // Assuming you handle OTP verification here
-      console.log("OTP submitted:", values);
-      // Replace with actual OTP verification logic
-      setLoading(false);
+      }
     } catch (error) {
-      console.log("Error:", error);
+      console.error("Error during OTP verification:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    const res = await axiosNisystAdmin.post(RESEND_AUTH, {
+      userId: User,
+    });
+    if (res?.data?.isSuccess) {
+      toast.success(res?.data?.message);
     }
   };
 
@@ -100,6 +110,14 @@ const OtpPage = () => {
                 {errors.otp && (
                   <div className="text-red-500 text-sm mt-1">{errors.otp}</div>
                 )}
+              </div>
+              <div className="flex items-center justify-end mt-2">
+                <span
+                  className="cursor-pointer text-sm underline text-indigo-600 hover:text-indigo-500 font-medium"
+                  onClick={handleResendCode}
+                >
+                  Resend Code
+                </span>
               </div>
             </div>
 
