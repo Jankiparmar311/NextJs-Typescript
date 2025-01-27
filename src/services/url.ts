@@ -289,3 +289,6 @@ export const GET_JOB_OVERVIEW_DATA = "/Dashboard/GetJobOverviewData";
 
 // Activity log
 export const GET_ALL_ACTIVITY_LOG = "/Authentication/GetActivitieLogs";
+
+// Posts
+export const GET_ALL_POSTS = "https://jsonplaceholder.typicode.com/posts";

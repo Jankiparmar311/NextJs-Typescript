@@ -1,7 +1,7 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import Cookies from "../../../services/cookies";
 import { axiosNisystAdmin } from "../../../services/api";
-import { LOGIN, VERIFY_AUTH } from "../../../services/url";
+import { LOGIN, LOGOUT, VERIFY_AUTH } from "../../../services/url";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 
@@ -12,6 +12,7 @@ interface loginState {
   loading: boolean;
   token: string;
   error: string | null;
+  user: object | null;
 }
 
 const initialState: loginState = {
@@ -19,6 +20,7 @@ const initialState: loginState = {
   loading: false,
   token: "",
   error: "",
+  user: null,
 };
 
 interface LoginPayload {
@@ -55,6 +57,10 @@ interface ThunkAPI {
   rejectValue: string;
 }
 
+interface LogoutResponse {
+  isSuccess: boolean;
+}
+
 export const getLogin = createAsyncThunk<LoginResponse, LoginPayload, ThunkAPI>(
   "authentication/LoginThunk",
   async (payload, thunkAPI) => {
@@ -81,7 +87,7 @@ export const verifyOtp = createAsyncThunk<OtpResponse, OtpPayload, ThunkAPI>(
   async (payload, thunkAPI) => {
     try {
       const res = await axiosNisystAdmin.post(VERIFY_AUTH, payload);
-      Cookies.set("user", res?.data?.data?.userId);
+      Cookies.set("user", res?.data?.data);
       return res.data as OtpResponse;
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
@@ -96,10 +102,32 @@ export const verifyOtp = createAsyncThunk<OtpResponse, OtpPayload, ThunkAPI>(
   }
 );
 
+export const logout = createAsyncThunk<LogoutResponse, void, ThunkAPI>(
+  "authentication/logout",
+  async (_, thunkAPI) => {
+    try {
+      const res = await axiosNisystAdmin.get(LOGOUT);
+      return res.data as LogoutResponse;
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        toast.error(err.response?.data?.message || "Error occurred");
+        return thunkAPI.rejectWithValue(
+          err.response?.data?.statusCode || "UNKNOWN_ERROR"
+        );
+      }
+      toast.error("An unexpected error occurred");
+      return thunkAPI.rejectWithValue("UNKNOWN_ERROR");
+    }
+  }
+);
 const loginSlice = createSlice({
   name: "login",
   initialState,
-  reducers: {},
+  reducers: {
+    setIsAuth: (state, action) => {
+      state.isAuth = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getLogin.pending, (state) => {
@@ -110,8 +138,9 @@ const loginSlice = createSlice({
         getLogin.fulfilled,
         (state, action: PayloadAction<LoginResponse>) => {
           state.loading = false;
-          state.isAuth = true;
+          state.isAuth = false;
           state.token = action.payload.data.token;
+          state.user = null;
         }
       )
       .addCase(getLogin.rejected, (state) => {
@@ -129,6 +158,7 @@ const loginSlice = createSlice({
           state.loading = false;
           state.token = action.payload.data.token;
           state.isAuth = true;
+          state.user = action.payload.data;
         }
       )
       .addCase(verifyOtp.rejected, (state) => {
@@ -138,3 +168,4 @@ const loginSlice = createSlice({
   },
 });
 export default loginSlice.reducer;
+export const { setIsAuth } = loginSlice.actions;
