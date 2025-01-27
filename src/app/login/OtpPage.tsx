@@ -93,6 +93,7 @@ const OtpPage = () => {
               >
                 OTP
               </label>
+
               <div className="mt-2">
                 <input
                   id="otp"

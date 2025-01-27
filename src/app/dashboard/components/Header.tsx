@@ -32,9 +32,7 @@ const Header = () => {
   const toggle = () => setIsOpen(!isOpen);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const User = (Cookies?.get(cookieKeys.USER) as object) || "";
-
-  console.log("User", User);
+  const User = (Cookies?.get(cookieKeys.USER) as string) || "";
 
   const handleLogout = () => {
     setLoading(true);

@@ -46,7 +46,7 @@ export default function RootLayout({
 function LayoutWithAuth({ children }: { children: React.ReactNode }) {
   const links = [
     { label: "Home", href: "/", icon: <FaHome /> },
-    { label: "About", href: "/about", icon: <FaCogs /> },
+    { label: "Posts", href: "/post", icon: <FaCogs /> },
     { label: "Services", href: "/services", icon: <FaEnvelope /> },
     { label: "Contact", href: "/contact", icon: <FaUser /> },
   ];
@@ -63,15 +63,11 @@ function LayoutWithAuth({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       {isAuth && <Sidebar links={links} />}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         {isAuth && <Header />}
 
-        {/* Page Content */}
         {children}
       </div>
     </div>
